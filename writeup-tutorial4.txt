@@ -5,6 +5,14 @@ https://imgur.com/a/i91Er //update with object parameter
 
 ----------------- TUTORIAL 4
 
+Pada tutorial ini,yang saya pelajari ialah mengenai method RequestMapping ternyata ada variasi lain yakni GetMapping dan PostMapping.
+Jika masih menggunakan RequestMapping pun, kita tetap bisa memilih jenis request methodnya dengan attribut method.
+RequestMapping sendiri bisa digunakan untuk memanfaatkan method GET dan POST secara bersamaan, hanya saja diperlukan BindingResult dan HttpServlet (saya tidak ingat tepatnya) untuk menyatukan hasil keluarannya.
+
+Selain itu, saya juga jadi pahamcara menggunakan object sebagai parameter,sehingga tidak perlu memiliki RequestParam yang 
+kelewat banyak sebagai parameter. Selain menghemat waktu mengetik, dan membuat kode lebih sederhana hal ini juga berguna untuk
+meminimalisir kesalahan dalam penulisan RequestParameter.
+
 Jawaban Pertanyaan:
 1. Menurut saya validasi input yang opsional dan required tidak diperlukan jika menggunakan requestparam, 
 karena didalam methodnya sendiri bisa ada validasi dan penanganan masalah jika salahsatu input yang required tidak diisi. Tapi bolh dilakukan validasi.
@@ -17,7 +25,8 @@ Hanya saja berdasarkan source yang saya baca, hasil yang didapat dari kedua meth
 
 ----------------- METHOD YANG DIBUAT
 
-DELETE STUDENT
+---- DELETE STUDENT ----
+
     @RequestMapping("/student/delete/{npm}")
     public String delete (@PathVariable(value = "npm") String npm)
     {
@@ -29,17 +38,61 @@ DELETE STUDENT
         return "delete";
     }
 
-UPDATE STUDENT
+    @Override
+    public void deleteStudent (String npm)
+    {
+    	log.info("student "+npm+" deleted");
+    	studentMapper.deleteStudent(npm);
+    }
+
+    @Delete("DELETE FROM student WHERE npm = #{npm}")
+    void deleteStudent (@Param("npm") String npm);
+    
+
+ deskripsi: menerima input berupa npm. jika student yang memiliki nilai npm tersebut tidak ditemukan 
+ maka selectStudent akan mengembalikan null. ketika itu terjadi maka akan langsung membuka laman not-found.
+ Selain itu, maka akan dipanggil method deleteStudent yang akan menghapus student dengan npm tersebut
+ lalu akan mereturn halaman delete berhasil dilakukan.
+
+---- UPDATE STUDENT ----
+
     @RequestMapping("/student/update/{npm}")
-    public String update(Model model, @PathVariable(value="npm") String npm) {
+    public String update(@PathVariable(value="npm") String npm) {
     	if (studentDAO.selectStudent(npm)==null) return "not-found";
-    	StudentModel student = studentDAO.selectStudent(npm);
-    	model.addAttribute("student", student);
     	return "form-update";
     }
     
+    @RequestMapping(value="/student/update/submit", method=RequestMethod.POST)
+    public String updateSubmit(
+    		@RequestParam(value = "npm", required = false) String npm,
+    		@RequestParam(value = "name", required = false) String name,
+    		@RequestParam(value = "gpa", required = false) double gpa){
+    	StudentModel student = new StudentModel(npm,name,gpa);
+    	studentDAO.updateStudent(student);
+    	return "success-update";
+    }
+
+    @Override
+    public void updateStudent(StudentModel student) {
+    	log.info("gaada yang muncul");
+    	studentMapper.updateStudent(student);
+    	
+    }
+
+    @Update ("UPDATE student SET gpa=#{gpa}, name=#{name} where npm=#{npm}")
+    void updateStudent(StudentModel student);
+
+deskripsi: menerima input berupa npm. Sama seperti delete, jika selectStudent mengembalikan nilai null
+maka not-found akan langsung dibuka, jika tidak maka laman form-update akan dibuka.
+pada laman ini form terhubung dengan method updateSubtmit. isi yang ada pada form update akan diambil
+sebagai parameter method ini (npm, nama, gpa). lalu object student dibuat dan dipanggil method updateStudent yang memanggil method updateStudent pada StudentMapper yang berisikan query untuk mengupdate isi tabel berdasar parameter.
+
+---- UPDATE STUDENT with object parameter ----
+
     @RequestMapping(value="/student/update/submit", method=RequestMethod.POST)
     public String updateSubmit(@ModelAttribute StudentModel student) {
     	studentDAO.updateStudent(student);
     	return "success-update";
     }
+
+ deskripsi: sama seperti sebelumnya tapi parameter methodenya menerima object
