@@ -14,7 +14,8 @@
 	<form action="/student/update/submit" method="post" th:object="${student}">
 		<div>
 			<label for="npm">NPM</label> 
-			<input type="text" name="npm" readonly="true" th:value="${student.npm}" th:field="*{npm}" />
+			<input type="text" name="npm" readonly="true" th:value="*{npm}" />
+			//saya gatau kenapa, tapi kalau th:valuenya diisi ${student.npm} gamau kebaca
 			
 		</div>
 		<div>

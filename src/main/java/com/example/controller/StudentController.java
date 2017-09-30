@@ -115,8 +115,10 @@ public class StudentController
 //    }
     
     @RequestMapping("/student/update/{npm}")
-    public String update(@PathVariable(value="npm") String npm) {
+    public String update(Model model, @PathVariable(value="npm") String npm) {
     	if (studentDAO.selectStudent(npm)==null) return "not-found";
+    	StudentModel student = studentDAO.selectStudent(npm);
+    	model.addAttribute("student", student);
     	return "form-update";
     }
     
